@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h2 fw-black mb-1">📦 Produtos</h1>
+    <p class="text-muted mb-0">Seu estoque sem cara de repartição pública.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-light rounded-pill" href="{{ url_for('olx_import') }}">🧲 Importar OLX</a>
+    <a class="btn btn-vf rounded-pill" href="{{ url_for('product_new') }}">+ Novo produto</a>
+  </div>
+</div>
+
+<form class="vf-filter rounded-4 p-3 mb-4" method="get">
+  <div class="row g-2">
+    <div class="col-md-7"><input class="form-control rounded-pill" name="q" value="{{ q }}" placeholder="Buscar por nome, tag, categoria..."></div>
+    <div class="col-md-3">
+      <select class="form-select rounded-pill" name="status">
+        <option value="">Todos os status</option>
+        {% for s in statuses %}<option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2 d-grid"><button class="btn btn-dark rounded-pill">Filtrar</button></div>
+  </div>
+</form>
+
+<div class="row g-3">
+  {% for p in products %}
+  <div class="col-md-6 col-xl-4">
+    <div class="vf-product-card rounded-5 p-3 h-100">
+      <div class="vf-product-img rounded-4 mb-3" {% if p.image_url %}style="background-image:url('{{ p.image_url }}')"{% endif %}>
+        {% if not p.image_url %}<span>📦</span>{% endif %}
+      </div>
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <h2 class="h5 mb-1">{{ p.title }}</h2>
+        <span class="badge rounded-pill text-bg-light">{{ p.temperature }}</span>
+      </div>
+      <p class="text-muted small mb-2">{{ p.category or 'sem categoria' }} • {{ p.status }}</p>
+      <p class="vf-clamp">{{ p.description or 'Sem descrição ainda. Esse anúncio está tímido.' }}</p>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <strong class="fs-5">{{ p.price|money }}</strong>
+        <small class="text-muted">mín. {{ p.min_price|money }} • qtd {{ p.quantity }}</small>
+      </div>
+      <div class="vf-tags mb-3">
+        {% for tag in p.tags.split(',') if tag.strip() %}<span>{{ tag.strip() }}</span>{% endfor %}
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('product_edit', product_id=p.id) }}">Editar</a>
+        <a class="btn btn-sm btn-light rounded-pill" href="{{ url_for('product_suggest', product_id=p.id) }}">Texto melhor</a>
+        <a class="btn btn-sm btn-light rounded-pill" href="{{ url_for('matches', product_id=p.id) }}">Matches</a>
+        <form method="post" action="{{ url_for('product_delete', product_id=p.id) }}" onsubmit="return confirm('Remover este produto?')">
+          <button class="btn btn-sm btn-outline-danger rounded-pill">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12"><div class="vf-empty rounded-5 p-5 text-center">Nenhum produto encontrado. Bora cadastrar o primeiro?</div></div>
+  {% endfor %}
+</div>
+{% endblock %}
